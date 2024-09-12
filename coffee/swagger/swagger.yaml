@@ -1,0 +1,491 @@
+---
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+  - url: http://localhost:8080
+    description: Generated server url
+tags:
+  - name: Order
+    description: Order API
+  - name: Product
+    description: Product API
+  - name: Cart
+    description: Cart API
+paths:
+  "/product/{productId}":
+    put:
+      tags:
+        - Product
+      operationId: updateProduct
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productDTO:
+                  "$ref": "#/components/schemas/NewProductDTO"
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ProductDTO"
+    delete:
+      tags:
+        - Product
+      operationId: deleteProduct
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+  "/product":
+    get:
+      tags:
+        - Product
+      operationId: getProducts
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/PageProductDTO"
+    post:
+      tags:
+        - Product
+      operationId: saveProduct
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newProductDTO:
+                  "$ref": "#/components/schemas/NewProductDTO"
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ProductDTO"
+  "/order":
+    get:
+      tags:
+        - Order
+      operationId: getAllOrders
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/OrderDTO"
+    post:
+      tags:
+        - Order
+      operationId: order
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/OrderRequestDTO"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CreateOrderResponseDTO"
+  "/cart":
+    get:
+      tags:
+        - Cart
+      operationId: cartList
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CartList"
+    post:
+      tags:
+        - Cart
+      operationId: addCart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CartDTO"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CartList"
+  "/search/sale":
+    get:
+      tags:
+        - Product
+      operationId: getNonSoldoutProducts
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+  "/search/price":
+    get:
+      tags:
+        - Product
+      operationId: searchByPrice
+      parameters:
+        - name: minPrice
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: maxPrice
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+  "/search/name":
+    get:
+      tags:
+        - Product
+      operationId: searchByProductName
+      parameters:
+        - name: productName
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+  "/order/{email}":
+    get:
+      tags:
+        - Order
+      operationId: getOrder
+      parameters:
+        - name: email
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/OrderDTO"
+  "/order/{orderId}":
+    delete:
+      tags:
+        - Order
+      operationId: cancel
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+  "/cart/{productId}":
+    delete:
+      tags:
+        - Cart
+      operationId: deleteOneCart
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CartList"
+  "/cart/all":
+    delete:
+      tags:
+        - Cart
+      operationId: deleteAll
+      responses:
+        '200':
+          description: OK
+components:
+  schemas:
+    NewProductDTO:
+      type: object
+      properties:
+        productName:
+          type: string
+        category:
+          type: string
+          enum:
+            - COFFEE_BEAN
+        price:
+          type: integer
+          format: int64
+        description:
+          type: string
+        stock:
+          type: integer
+          format: int32
+        productStatus:
+          type: string
+          enum:
+            - SALE
+            - NOT_FOR_SALE
+            - SOLD_OUT
+            - READY_FOR_SALE
+    ProductDTO:
+      type: object
+      properties:
+        productId:
+          type: integer
+          format: int64
+        productName:
+          type: string
+        category:
+          type: string
+          enum:
+            - COFFEE_BEAN
+        productStatus:
+          type: string
+          enum:
+            - SALE
+            - NOT_FOR_SALE
+            - SOLD_OUT
+            - READY_FOR_SALE
+        price:
+          type: integer
+          format: int64
+        description:
+          type: string
+        imgPath:
+          type: string
+        stock:
+          type: integer
+          format: int32
+    OrderRequestDTO:
+      type: object
+      properties:
+        email:
+          type: string
+        address:
+          type: string
+        postCode:
+          type: string
+        orderItems:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int32
+    CreateOrderResponseDTO:
+      type: object
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - TODAY_DELIVERY
+            - PENDING_DELIVERY
+            - DELIVERING
+            - DELIVERED
+    CartDTO:
+      type: object
+      properties:
+        productId:
+          type: integer
+          format: int64
+        productName:
+          type: string
+        price:
+          type: integer
+          format: int32
+        quantity:
+          type: integer
+          format: int32
+        totalPrice:
+          type: integer
+          format: int32
+    CartList:
+      type: object
+      properties:
+        cart:
+          type: array
+          items:
+            "$ref": "#/components/schemas/CartDTO"
+        cartTotal:
+          type: integer
+          format: int32
+    PageProductDTO:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            "$ref": "#/components/schemas/ProductDTO"
+        number:
+          type: integer
+          format: int32
+        sort:
+          "$ref": "#/components/schemas/SortObject"
+        first:
+          type: boolean
+        last:
+          type: boolean
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          "$ref": "#/components/schemas/PageableObject"
+        empty:
+          type: boolean
+    PageableObject:
+      type: object
+      properties:
+        offset:
+          type: integer
+          format: int64
+        sort:
+          "$ref": "#/components/schemas/SortObject"
+        paged:
+          type: boolean
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        unpaged:
+          type: boolean
+    SortObject:
+      type: object
+      properties:
+        empty:
+          type: boolean
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
+    OrderDTO:
+      type: object
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        email:
+          type: string
+        address:
+          type: string
+        postCode:
+          type: string
+        orderStatus:
+          type: string
+          enum:
+            - TODAY_DELIVERY
+            - PENDING_DELIVERY
+            - DELIVERING
+            - DELIVERED
+        orderItems:
+          type: array
+          items:
+            "$ref": "#/components/schemas/OrderItemDTO"
+    OrderItemDTO:
+      type: object
+      properties:
+        productName:
+          type: string
+        category:
+          type: string
+        price:
+          type: integer
+          format: int64
+        quantity:
+          type: integer
+          format: int32
